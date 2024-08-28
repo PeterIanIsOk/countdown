@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>113-1學年度建功國中八年級各重大事項時間倒數</title>
+    <style>
+        @font-face {
+            font-family: 'jf-openhuninn';
+            src: url('jf-openhuninn-2.0.ttf') format('truetype');
+        }
+
+        body {
+            font-family: 'jf-openhuninn';
+            background-color: #f5f5f5;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 28px;
+            margin-bottom: 30px;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            justify-content: center;
+        }
+
+        li {
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+            cursor: pointer;
+            text-align: center;
+            display: none; /* 默认隐藏 */
+        }
+
+        li.show {
+            display: block; /* 只有在需要时才显示 */
+        }
+
+        li:hover {
+            transform: translateY(-5px);
+        }
+
+        .countdown-event {
+            font-size: 30px;
+            margin-bottom: 10px;
+        }
+
+        .countdown-days {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        /* 根據剩餘天數調整字體顏色 */
+        .countdown-days.less-than-10 {
+            font-size: 45px;
+            color: red;
+        }
+
+        .countdown-days.between-11-and-30 {
+            font-size: 40px;
+            color: blue;
+        }
+
+        .countdown-days.more-than-30 {
+            font-size: 35px;
+            color: black;
+        }
+
+        /* 根據事件類型調整背景顏色 */
+        .event-exam {
+            background-color: #fde580;
+        }
+
+        .event-holiday {
+            background-color: #c2e8c2;
+        }
+
+        .event-other {
+            background-color: #ffffff;
+        }
+
+        footer {
+            font-size: 15px;
+            color: rgba(128, 128, 128, 0.75); /* Light gray with 75% opacity */
+            text-align: center;
+            padding: 10px;
+        }
+        .current-date {
+            font-size: 25px;
+            margin-top: 10px;
+        }
+
+    </style>
+    <script>
+        // 目標日期與事件清單
+        var countdownEvents = [
+            { date: new Date('2024-08-30'), event: '開學', type: 'event-other' },
+            { date: new Date('2024-10-08'), event: '第一次段考', type: 'event-exam' },
+            { date: new Date('2024-11-25'), event: '第二次段考', type: 'event-exam' },
+            { date: new Date('2025-01-16'), event: '期末考', type: 'event-exam' },
+            { date: new Date('2024-09-17'), event: '中秋節', type: 'event-holiday' },
+            { date: new Date('2024-10-10'), event: '雙十國慶', type: 'event-holiday' },
+            { date: new Date('2025-01-01'), event: '元旦', type: 'event-holiday' },
+            { date: new Date('2024-10-28'), event: '隔宿露營', type: 'event-other' },
+            { date: new Date('2024-12-06'), event: '校慶運動會', type: 'event-other' },
+            { date: new Date('2024-12-07'), event: '校慶園遊會', type: 'event-other' },
+            { date: new Date('2024-12-09'), event: '校慶補假', type: 'event-holiday' },
+            { date: new Date('2025-01-20'), event: '寒假', type: 'event-holiday' }
+        ];
+
+        // 更新所有倒數計時器
+        function updateCountdownTimers() {
+            var currentDate = new Date();
+
+            // 計算每個事件的剩餘天數
+            countdownEvents.forEach(function(countdownEvent, index) {
+                countdownEvent.remainingDays = Math.ceil((countdownEvent.date - currentDate) / (1000 * 60 * 60 * 24));
+            });
+
+            // 按照剩餘天數進行排序
+            countdownEvents.sort(function(a, b) {
+                return a.remainingDays - b.remainingDays;
+            });
+
+            // 更新 HTML 元素
+            countdownEvents.forEach(function(countdownEvent, index) {
+                var resultElement = document.getElementById('result' + index);
+                if (resultElement) {
+                    resultElement.innerHTML = `
+                        <div class="countdown-event">${countdownEvent.event}</div>
+                        <div class="countdown-days ${getClassByRemainingDays(countdownEvent.remainingDays)}">${countdownEvent.remainingDays} 天</div>
+                    `;
+                    resultElement.className = countdownEvent.type; // Replace all classes with event type class
+                    resultElement.classList.add('show'); // 顯示當前事件的元素
+                }
+            });
+
+            // 隱藏不需要顯示的 li 元素
+            for (var i = countdownEvents.length; i < 12; i++) {
+                var resultElement = document.getElementById('result' + i);
+                if (resultElement) {
+                    resultElement.classList.remove('show'); // 隱藏不需要的元素
+                }
+            }
+
+            // 更新當前日期顯示
+            updateCurrentDate();
+        }
+
+        // 根據剩餘天數返回對應的 CSS 類別
+        function getClassByRemainingDays(remainingDays) {
+            if (remainingDays <= 10) {
+                return 'less-than-10';
+            } else if (remainingDays >= 11 && remainingDays <= 30) {
+                return 'between-11-and-30';
+            } else {
+                return 'more-than-30';
+            }
+        }
+
+        // 更新當前日期顯示
+        function updateCurrentDate() {
+            var currentDate = new Date();
+            var dateElement = document.getElementById('currentDate');
+            if (dateElement) {
+                var year = currentDate.getFullYear();
+                var month = String(currentDate.getMonth() + 1).padStart(2, '0');
+                var day = String(currentDate.getDate()).padStart(2, '0');
+                dateElement.textContent = `今天是: ${year}年${month}月${day}日`;
+            }
+        }
+
+        setInterval(updateCountdownTimers, 1000);
+
+        // 監聽鍵盤事件
+        document.addEventListener('keydown', function(event) {
+            // 檢查是否按下了C鍵
+            if (event.key === 'c' || event.key === 'C') {
+                // 複製所有事件及剩餘天數到剪貼板
+                const countdownText = getCountdownText();
+                copyToClipboard(countdownText);
+
+                // 在控制台輸出已複製的內容，以便檢查
+                console.log("已複製以下內容到剪貼板：\n" + countdownText);
+            }
+        });
+
+        // 取得所有事件及剩餘天數的文字
+        function getCountdownText() {
+            let countdownText = '';
+
+            // 反覆運算目標日期與事件清單
+            countdownEvents.forEach(function(countdownEvent) {
+                const remainingDays = countdownEvent.remainingDays;
+                countdownText += `${countdownEvent.event}: ${remainingDays}天\n`;
+            });
+
+            return countdownText;
+        }
+
+        // 複製文字到剪貼板
+        function copyToClipboard(text) {
+            const tempInput = document.createElement('textarea');
+            tempInput.value = text;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+        }
+
+    </script>
+</head>
+<body>
+    <h1>建功國中八年級各重大事項時間倒數</h1>
+    <div class="current-date" id="currentDate"></div> <!-- 新增顯示日期的區域 -->
+    <ul>
+        <li id="result0"></li>
+        <li id="result1"></li>
+        <li id="result2"></li>
+        <li id="result3"></li>
+        <li id="result4"></li>
+        <li id="result5"></li>
+        <li id="result6"></li>
+        <li id="result7"></li>
+        <li id="result8"></li>
+        <li id="result9"></li>
+        <li id="result10"></li>
+        <li id="result11"></li>
+    </ul>
+    <footer>
+        <b>本網站使用正體字</b><br><br>
+        &copy; 版權所有 &copy; <br><br>
+    </footer>
+</body>
+</html>
